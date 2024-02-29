@@ -37,8 +37,21 @@ end
 
 % Average rate of the kth node Rk_power
 
-function Rk_power = avRate (Rk, k, Pk)
-    temp1 = ;
+function Rk_power = avRate (Rk, k, Pk, sigma, heta, theta)
+    Xk = Xk_helper(sigma, Rk, Pk, heta, theta);
+    g = gammainc(Xk, k);
+    G = gamma(k);
+    temp1 = g/G;
     temp2 = 1 - temp1;
     Rk_power = Rk * temp2;
+end
+
+
+% Xk helper function
+
+function y = Xk_helper(sigma, Rk, Pk, heta, theta)
+    numerator = 2 * pi * sigma^2 * (2*Rk - 1);
+    denominator = e * (abs(heta * Pk))^2 * theta^2;
+    fraction = numerator/denominator;
+    y = sqrt(fraction);
 end
