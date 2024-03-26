@@ -15,7 +15,8 @@
 % A brute force / exploration method for the optimization of energy
 % efficiency in Wireless Body Area Networks
 
-% PSO Parameters
+
+%% PSO Parameters definition and initialization
 
 qLow = 0;
 PLow = 0;
@@ -58,10 +59,16 @@ for i = 1:num_particles
 end
 
 % Initialize global best position and fitness
-[global_best_fitness, global_best_index] = min(particles.best_fitness);
-global_best_position = particles.best_position(global_best_index, :);
+for i = 1:num_particles
+    if particles(i).best_fitness > global_best_fitness
+        global_best.fitness = particles(i).best_fitness;
+        for j = 1:num_devices
+            global_best.position(j) = particles(i).node(j).position;
+        end
+    end
+end
 
-% Main PSO loop
+%% Main PSO loop
 for iteration = 1:max_iterations
     % Update particle velocities and positions
     for i = 1:num_particles
@@ -105,7 +112,7 @@ disp(global_best_position);
 
 
 
-%% Equations
+%% Supporting Equations for calculating the objective function
 
 % Channel Statistical Model (Gamma distribution)
 % To describe the channel DC gain we use the gamma distribution
