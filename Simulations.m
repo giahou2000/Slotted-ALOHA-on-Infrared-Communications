@@ -1,7 +1,7 @@
 %% Performance of Slotted ALOHA on infrared WBANs
 % This simulation tries to describe the performance of Slotted ALOHA
 % when applied as a MAC protocol for a WBAN system that consists of
-% 6 nodes. For the communication medium it is assumed that we use the
+% 6 nodes (5 sensor nodes and 1 coordinator node). For the communication medium it is assumed that we use the
 % infrared part of the electromagnetic spectrum.
 
 % Authors:
@@ -12,26 +12,49 @@
 
 
 %% PSO - Particle Swarm Optimization
-% A brute force / exploration method for the optimization problem
+% A brute force / exploration method for the optimization of energy
+% efficiency in Wireless Body Area Networks
 
 % PSO Parameters
+
+qLow = 0;
+PLow = 0;
+RLow = 0;
+qHigh = 1;
+PHigh = 1;
+RHigh = 1;
+
+% The values blo and bup represent the lower and upper boundaries of the search-space respectively.
+blo = [qLow, PLow, RLow]; % minimum limit for the tested variables
+bup = [qHigh, PHigh, RHigh]; % maximum limit for the tested variables
+velocity_low = -abs(bup - blo);
+velocity_high = abs(bup - blo);
 num_devices = 5; % Change this to the desired number of devices (K)
-num_dimensions = 3 * num_devices;
-num_particles = 30;
-max_iterations = 100;
+num_variables = 3;
+num_dimensions = num_variables * num_devices;
+num_particles = 30; % number of particles that will search for the best position
+max_iterations = 100; % iterations until an acceptable value
 c1 = 2; % cognitive parameter
 c2 = 2; % social parameter
-inertia_weight = 0.7;
+w = 0.7; % inertia weight
 
 % Initialize particles
-particles.position = rand(num_particles, num_dimensions); % Random initial positions
-particles.velocity = rand(num_particles, num_dimensions); % Random initial velocities
-particles.best_position = particles.position; % Best known positions
-% particles.best_fitness = zeros(num_particles, 1); % Best known fitness values
+% Pre-allocate an empty array of structs
+particles = struct.empty(num_particles, 0);  % 0 indicates no pre-defined fields
 
-% Evaluate fitness for each particle
+% Access and modify individual structs
 for i = 1:num_particles
-    particles.best_fitness(i) = your_objective_function(particles.best_position(i, :), num_devices);
+    for j = 1:num_devices
+      particles(i).node(j).position = rand(num_variables, 1); % Random initial positions
+      particles(i).node(j).velocity = velocity_low + (velocity_high - velocity_low).*rand(num_variables, 1); % Random initial velocities
+      particles(i).node(j).best_position = particles(i).node(j).position; % Best known positions
+      particles(i).best_fitness = 0; % Best known fitness values
+    end
+end
+
+% Evaluate starting fitness for each particle
+for i = 1:num_particles
+    particles(i).best_fitness = your_objective_function(particles, num_devices);
 end
 
 % Initialize global best position and fitness
@@ -46,7 +69,7 @@ for iteration = 1:max_iterations
         r2 = rand(1, num_dimensions);
         
         % Update velocity
-        particles.velocity(i, :) = inertia_weight * particles.velocity(i, :) + ...
+        particles.velocity(i, :) = w * particles.velocity(i, :) + ...
             c1 * r1 .* (particles.best_position(i, :) - particles.position(i, :)) + ...
             c2 * r2 .* (global_best_position - particles.position(i, :));
         
@@ -94,9 +117,9 @@ f_x = gampdf(x, a, b);
 % Your objective function (modify this for your specific problem)
 function value = your_objective_function(x, num_devices)
     % Compute the Rk_hut and the Pk using the functions below
-    Rk_hut = 0;
-    Pk = 0;
-    value = Rk_hut/Pk;
+    Rk_hat = avThrouput (k, Rk_power, q);
+    Pk = 0; % What about that?????????????????
+    value = Rk_hat/Pk;
 end
 
 % Average throughput of the network Rk_hat
