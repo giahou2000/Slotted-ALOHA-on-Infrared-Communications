@@ -35,9 +35,10 @@ num_variables = 3;
 num_dimensions = num_variables * num_devices;
 num_particles = 30; % number of particles that will search for the best position
 max_iterations = 100; % iterations until an acceptable value
-c1 = 2; % cognitive parameter
-c2 = 2; % social parameter
+phi_p = 2; % cognitive parameter
+phi_g = 2; % social parameter
 w = 0.7; % inertia weight
+global_best.fitness = 0;
 
 % Initialize particles
 % Pre-allocate an empty array of structs
@@ -60,7 +61,7 @@ end
 
 % Initialize global best position and fitness
 for i = 1:num_particles
-    if particles(i).best_fitness > global_best_fitness
+    if particles(i).best_fitness > global_best.fitness
         global_best.fitness = particles(i).best_fitness;
         for j = 1:num_devices
             global_best.position(j) = particles(i).node(j).position;
@@ -68,47 +69,57 @@ for i = 1:num_particles
     end
 end
 
+
+
 %% Main PSO loop
 for iteration = 1:max_iterations
-    % Update particle velocities and positions
+
+    % For each particle
     for i = 1:num_particles
-        r1 = rand(1, num_dimensions);
-        r2 = rand(1, num_dimensions);
-        
-        % Update velocity
-        particles.velocity(i, :) = w * particles.velocity(i, :) + ...
-            c1 * r1 .* (particles.best_position(i, :) - particles.position(i, :)) + ...
-            c2 * r2 .* (global_best_position - particles.position(i, :));
-        
-        % Update position
-        particles.position(i, :) = particles.position(i, :) + particles.velocity(i, :);
+
+        % For each node of the particle
+        for j = 1:num_devices
+            % Update velocity
+            rp = rand(num_variables, 1);
+            rg = rand(num_variables, 1);
+            old_velocity = particles(i).node(j).velocity;
+            particles(i).node(j).velocity = w * old_velocity + phi_p * rp * (particles(i).node(j).best_position - particles(i).node(j).position) + phi_g * rg * (global_best.position(j) - particles(i).node(j).position);
+            old_position = particles(i).node(j).position;
+            temp = old_position + particles(i).node(j).velocity;
+            if 5>3 % implement the limits of the variables in if statement
+                particles(i).node(j).position = temp;
+            else
+                particles(i).node(j).position = old_position; % instead of old position put the edge
+            end
+        end
         
         % Evaluate fitness
-        current_fitness = your_objective_function(particles.position(i, :), num_devices);
+        current_fitness = your_objective_function(particles(i).node(j).position, num_devices);
         
         % Update personal best
-        if current_fitness < particles.best_fitness(i)
-            particles.best_fitness(i) = current_fitness;
-            particles.best_position(i, :) = particles.position(i, :);
+        if current_fitness > particles(i).best_fitness
+            particles(i).best_fitness = current_fitness;
+            for j = 1:num_devices
+                particles(i).node(j).best_position = particles(i).node(j).position;
+            end
+            if current_fitness > global_best.fitness
+                global_best.fitness = particles(i).best_fitness;
+                for j = 1:num_devices
+                    global_best.position(j) = particles(i).node(j).position;
+                end
+            end
         end
     end
     
-    % Update global best
-    [min_fitness, min_index] = min(particles.best_fitness);
-    if min_fitness < global_best_fitness
-        global_best_fitness = min_fitness;
-        global_best_position = particles.best_position(min_index, :);
-    end
-    
     % Display current best fitness value for each iteration
-    fprintf('Iteration %d: Best Fitness = %.4f\n', iteration, global_best_fitness);
+    fprintf('Iteration %d: Best Fitness = %.4f\n', iteration, global_best.fitness);
 end
 
 % Display final result
 fprintf('\nFinal Result:\n');
-fprintf('Global Best Fitness = %.4f\n', global_best_fitness);
+fprintf('Global Best Fitness = %.4f\n', global_best.fitness);
 fprintf('Global Best Position = ');
-disp(global_best_position);
+disp(global_best.position(:));
 
 
 
@@ -122,11 +133,12 @@ b = 0.04;
 f_x = gampdf(x, a, b);
 
 % Your objective function (modify this for your specific problem)
-function value = your_objective_function(x, num_devices)
-    % Compute the Rk_hut and the Pk using the functions below
-    Rk_hat = avThrouput (k, Rk_power, q);
-    Pk = 0; % What about that?????????????????
-    value = Rk_hat/Pk;
+function value = your_objective_function(~, ~)
+    value = rand;
+    % % Compute the Rk_hut and the Pk using the functions below
+    % Rk_hat = avThrouput (k, Rk_power, q);
+    % Pk = 0; % What about that?????????????????
+    % value = Rk_hat/Pk;
 end
 
 % Average throughput of the network Rk_hat
