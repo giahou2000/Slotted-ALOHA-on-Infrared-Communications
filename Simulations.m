@@ -16,8 +16,11 @@
 % efficiency in Wireless Body Area Networks
 
 
-%% PSO Parameters definition and initialization
 
+%% PSO Parameters definition and initialization
+% ______________________________________________
+
+% Limits on the variable parameters of the problem
 qLow = 0;
 PLow = 0;
 RLow = 0;
@@ -28,6 +31,7 @@ RHigh = 1;
 % The values blo and bup represent the lower and upper boundaries of the search-space respectively.
 blo = [qLow, PLow, RLow]; % minimum limit for the tested variables
 bup = [qHigh, PHigh, RHigh]; % maximum limit for the tested variables
+% Velocity limits
 velocity_low = -abs(bup - blo);
 velocity_high = abs(bup - blo);
 num_devices = 5; % Change this to the desired number of devices (K)
@@ -39,6 +43,8 @@ phi_p = 2; % cognitive parameter
 phi_g = 2; % social parameter
 w = 0.7; % inertia weight
 global_best.fitness = 0;
+
+% ______________________________________________
 
 % Initialize particles
 % Pre-allocate an empty array of structs
@@ -56,7 +62,7 @@ end
 
 % Evaluate starting fitness for each particle
 for i = 1:num_particles
-    particles(i).best_fitness = your_objective_function(particles, num_devices);
+    particles(i).best_fitness = your_objective_function(particles);
 end
 
 % Initialize global best position and fitness
@@ -71,7 +77,11 @@ end
 
 
 
+
+
 %% Main PSO loop
+% ______________________________________________
+
 for iteration = 1:max_iterations
 
     % For each particle
@@ -94,7 +104,7 @@ for iteration = 1:max_iterations
         end
         
         % Evaluate fitness
-        current_fitness = your_objective_function(particles(i).node(j).position, num_devices);
+        current_fitness = your_objective_function(particles(i), num_devices);
         
         % Update personal best
         if current_fitness > particles(i).best_fitness
@@ -112,7 +122,7 @@ for iteration = 1:max_iterations
     end
     
     % Display current best fitness value for each iteration
-    fprintf('Iteration %d: Best Fitness = %.4f\n', iteration, global_best.fitness);
+    fprintf('Iteration %d: Current best fitness = %.4f\n', iteration, global_best.fitness);
 end
 
 % Display final result
@@ -123,22 +133,32 @@ disp(global_best.position(:));
 
 
 
+
+
+
 %% Supporting Equations for calculating the objective function
+% ______________________________________________
 
 % Channel Statistical Model (Gamma distribution)
 % To describe the channel DC gain we use the gamma distribution
-x = 1:10;
-a = 13.79;
-b = 0.04;
-f_x = gampdf(x, a, b);
+% x = 1:10;
+% a = 13.79;
+% b = 0.04;
+% f_x = gampdf(x, a, b);
 
-% Your objective function (modify this for your specific problem)
-function value = your_objective_function(~, ~)
-    value = rand;
-    % % Compute the Rk_hut and the Pk using the functions below
-    % Rk_hat = avThrouput (k, Rk_power, q);
-    % Pk = 0; % What about that?????????????????
-    % value = Rk_hat/Pk;
+% Objective function
+function value = your_objective_function(particle, nodes_num)
+    % value = rand; % just for testing the functionality of the rest of the
+    % algorithm
+    % Compute the Rk_hut and the Pk using the functions below
+    sum = 0;
+    for i = 1:nodes_num
+        Rk_power = avRate (particle.node(i).position(3), i, particle.node(i).position(2), sigma, heta, theta);
+        Rk_hat = avThrouput (i, Rk_power, particle.node(i).position(1));
+        Pk = particle.node(i).position(2);
+        sum = sum + (Rk_hat/Pk);
+    end
+    value = sum;
 end
 
 % Average throughput of the network Rk_hat
