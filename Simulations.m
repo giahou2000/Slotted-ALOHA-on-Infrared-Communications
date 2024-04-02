@@ -22,11 +22,11 @@
 
 % Limits on the variable parameters of the problem
 qLow = 0;
-PLow = 0;
-RLow = 0;
+PLow = 0; % (mw)
+RLow = 250; % (kbps)
 qHigh = 1;
-PHigh = 1;
-RHigh = 1;
+PHigh = 30; % (mW)
+RHigh = 2500; % (kbps)
 
 % The values blo and bup represent the lower and upper boundaries of the search-space respectively.
 blo = [qLow, PLow, RLow]; % minimum limit for the tested variables
@@ -39,10 +39,13 @@ num_variables = 3;
 num_dimensions = num_variables * num_devices;
 num_particles = 30; % number of particles that will search for the best position
 max_iterations = 100; % iterations until an acceptable value
-phi_p = 2; % cognitive parameter
+phi_p = 1.5; % cognitive parameter
 phi_g = 2; % social parameter
 w = 0.7; % inertia weight
 global_best.fitness = 0;
+sigma = 0.5;
+heta = 0.6;
+theta = 0.2;
 
 % ______________________________________________
 
@@ -62,7 +65,7 @@ end
 
 % Evaluate starting fitness for each particle
 for i = 1:num_particles
-    particles(i).best_fitness = your_objective_function(particles);
+    particles(i).best_fitness = fitness(particles);
 end
 
 % Initialize global best position and fitness
@@ -104,7 +107,7 @@ for iteration = 1:max_iterations
         end
         
         % Evaluate fitness
-        current_fitness = your_objective_function(particles(i), num_devices);
+        current_fitness = fitness(particles(i), num_devices);
         
         % Update personal best
         if current_fitness > particles(i).best_fitness
@@ -147,7 +150,7 @@ disp(global_best.position(:));
 % f_x = gampdf(x, a, b);
 
 % Objective function
-function value = your_objective_function(particle, nodes_num)
+function value = fitness(particle, nodes_num)
     % value = rand; % just for testing the functionality of the rest of the
     % algorithm
     % Compute the Rk_hut and the Pk using the functions below
