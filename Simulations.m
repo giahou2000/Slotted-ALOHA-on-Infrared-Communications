@@ -17,33 +17,36 @@
 
 
 
-%% PSO Parameters definition and initialization
-% ______________________________________________
+%% !___ PSO Parameters definition and initialization ___!
 
 % Limits on the variable parameters of the problem
-qLow = 0;
+
+qLow = 0; % probability
 PLow = 0; % (mw)
 RLow = 250; % (kbps)
-qHigh = 1;
+
+qHigh = 1; % probability
 PHigh = 30; % (mW)
 RHigh = 2500; % (kbps)
 
 % The values blo and bup represent the lower and upper boundaries of the search-space respectively.
+
 blo = [qLow, PLow, RLow]; % minimum limit for the tested variables
 bup = [qHigh, PHigh, RHigh]; % maximum limit for the tested variables
+
 % Velocity limits
+
 velocity_low = -abs(bup - blo);
 velocity_high = abs(bup - blo);
 num_devices = 5; % Change this to the desired number of devices (K)
 num_variables = 3;
-num_dimensions = num_variables * num_devices;
 num_particles = 30; % number of particles that will search for the best position
-max_iterations = 100; % iterations until an acceptable value
+max_iterations = 100; % iterations until an acceptable convergence
 phi_p = 1.5; % cognitive parameter
 phi_g = 2; % social parameter
 w = 0.7; % inertia weight
 global_best.fitness = 0;
-sigma = 0.5;
+s = 0.5;
 heta = 0.6;
 theta = 0.2;
 
@@ -57,7 +60,7 @@ particles = struct.empty(num_particles, 0);  % 0 indicates no pre-defined fields
 for i = 1:num_particles
     for j = 1:num_devices
       particles(i).node(j).position = rand(num_variables, 1); % Random initial positions
-      particles(i).node(j).velocity = velocity_low + (velocity_high - velocity_low).*rand(num_variables, 1); % Random initial velocities
+      particles(i).node(j).velocity = velocity_low + (velocity_high - velocity_low) * rand; % Random initial velocities
       particles(i).node(j).best_position = particles(i).node(j).position; % Best known positions
       particles(i).best_fitness = 0; % Best known fitness values
     end
@@ -65,7 +68,7 @@ end
 
 % Evaluate starting fitness for each particle
 for i = 1:num_particles
-    particles(i).best_fitness = fitness(particles);
+    particles(i).best_fitness = fitness(particles, num_devices, i);
 end
 
 % Initialize global best position and fitness
@@ -107,7 +110,7 @@ for iteration = 1:max_iterations
         end
         
         % Evaluate fitness
-        current_fitness = fitness(particles(i), num_devices);
+        current_fitness = fitness(particles, num_devices, i);
         
         % Update personal best
         if current_fitness > particles(i).best_fitness
@@ -150,15 +153,15 @@ disp(global_best.position(:));
 % f_x = gampdf(x, a, b);
 
 % Objective function
-function value = fitness(particle, nodes_num)
+function value = fitness(particles, nodes_num, which_particle)
     % value = rand; % just for testing the functionality of the rest of the
     % algorithm
     % Compute the Rk_hut and the Pk using the functions below
     sum = 0;
     for i = 1:nodes_num
-        Rk_power = avRate (particle.node(i).position(3), i, particle.node(i).position(2), sigma, heta, theta);
-        Rk_hat = avThrouput (i, Rk_power, particle.node(i).position(1));
-        Pk = particle.node(i).position(2);
+        Rk_power = avRate (particles(which_particle).node(i).position(3), i, particles(which_particle).node(i).position(2), s, heta, theta);
+        Rk_hat = avThrouput (i, Rk_power, particles(which_particle).node(i).position(1));
+        Pk = particles(which_particle).node(i).position(2);
         sum = sum + (Rk_hat/Pk);
     end
     value = sum;
@@ -182,8 +185,8 @@ end
 
 % Average rate of the kth node Rk_power
 
-function Rk_power = avRate (Rk, k, Pk, sigma, heta, theta)
-    Xk = Xk_helper(sigma, Rk, Pk, heta, theta);
+function Rk_power = avRate (Rk, k, Pk, s, heta, theta)
+    Xk = Xk_helper(s, Rk, Pk, heta, theta);
     g = gammainc(Xk, k);
     G = gamma(k);
     temp1 = g/G;
@@ -194,8 +197,8 @@ end
 
 % Xk helper function
 
-function y = Xk_helper(sigma, Rk, Pk, heta, theta)
-    numerator = 2 * pi * sigma^2 * (2*Rk - 1);
+function y = Xk_helper(s, Rk, Pk, heta, theta)
+    numerator = 2 * pi * s^2 * (2*Rk - 1);
     denominator = e * (abs(heta * Pk))^2 * theta^2;
     fraction = numerator/denominator;
     y = sqrt(fraction);
