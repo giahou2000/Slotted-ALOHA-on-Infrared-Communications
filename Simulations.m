@@ -107,10 +107,10 @@ for iteration = 1:max_iterations
             particles(i).node(j).velocity = w * old_velocity + phi_p * rp .* (particles(i).node(j).best_position - particles(i).node(j).position) + phi_g * rg .* (global_best(j).position - particles(i).node(j).position);
             old_position = particles(i).node(j).position;
             temp = old_position + particles(i).node(j).velocity;
-            if 5>3 % implement the limits of the variables in if statement
+            if (temp(1) > qLow) && (temp(1) < qHigh) && (temp(2) > PLow) && (temp(2) < PHigh) && (temp(3) > RLow) && (temp(3) < RHigh)% implement the limits of the variables in if statement
                 particles(i).node(j).position = temp;
             else
-                particles(i).node(j).position = old_position; % instead of old position put the edge
+                continue % instead of old position put the edge
             end
         end
         
