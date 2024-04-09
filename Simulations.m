@@ -25,11 +25,11 @@ clc; clear;
 
 qLow = 0; % probability
 PLow = 0; % (w)
-RLow = 0; % (bps)
+RLow = 0; % (bps/Hz)
 
 qHigh = 1; % probability
 PHigh = 0.05; % (W)
-RHigh = 2.5; % (bps)
+RHigh = 2.5; % (bps/Hz)
 
 % The values blo and bup represent the lower and upper boundaries of the search-space respectively.
 
