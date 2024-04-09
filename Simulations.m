@@ -24,12 +24,12 @@
 clc; clear;
 
 qLow = 0; % probability
-PLow = 0; % (mw)
-RLow = 250; % (kbps)
+PLow = 0; % (w)
+RLow = 0; % (bps)
 
 qHigh = 1; % probability
-PHigh = 30; % (mW)
-RHigh = 2500; % (kbps)
+PHigh = 0.05; % (W)
+RHigh = 2.5; % (bps)
 
 % The values blo and bup represent the lower and upper boundaries of the search-space respectively.
 
@@ -42,15 +42,14 @@ velocity_low = -abs(bup - blo);
 velocity_high = abs(bup - blo);
 num_devices = 5; % Change this to the desired number of devices (K)
 num_variables = 3;
-num_particles = 30; % number of particles that will search for the best position
-max_iterations = 100; % iterations until an acceptable convergence
+num_particles = 50; % number of particles that will search for the best position
+max_iterations = 500; % iterations until an acceptable convergence
 phi_p = 1.5; % cognitive parameter
 phi_g = 2; % social parameter
 w = 0.7; % inertia weight
 global_best_fitness = 0;
 s = 0.5;
 heta = 0.6;
-theta = 0.2;
 
 % ______________________________________________
 
@@ -67,13 +66,8 @@ for i = 1:num_particles
       particles(i).node(j).position(3) = RLow + (RHigh - RLow) * rand; % Random initial transmission rate
       particles(i).node(j).velocity = velocity_low + (velocity_high - velocity_low) * rand; % Random initial velocities
       particles(i).node(j).best_position = particles(i).node(j).position; % Best known positions
-      particles(i).best_fitness = 0; % Best known fitness values
     end
-end
-
-% Evaluate starting fitness for each particle
-for i = 1:num_particles
-    particles(i).best_fitness = fitness(particles, num_devices, i, s, heta, theta);
+    particles(i).best_fitness = fitness(particles, num_devices, i, s, heta);
 end
 
 % Initialize global best position and fitness
@@ -114,8 +108,8 @@ for iteration = 1:max_iterations
             end
         end
         
-        % Evaluate fitness
-        current_fitness = fitness(particles, num_devices, i, s, heta, theta);
+        % Evaluate fitnessprint
+        current_fitness = fitness(particles, num_devices, i, s, heta);
         
         % Update personal best
         if current_fitness > particles(i).best_fitness
@@ -141,7 +135,9 @@ fprintf('\nFinal Result:\n');
 fprintf('Global Best Fitness = %.4f\n', global_best_fitness);
 fprintf('Global Best Position = ');
 for i = 1:num_devices
-    disp(global_best(i).position);
+    disp(['Node:', num2str(i)]);
+    disp(['q:', num2str(global_best(i).position(1)), '   ', 'P:', num2str(global_best(i).position(2)), '   ', 'R:', num2str(global_best(i).position(3))]);
+    disp('')
 end
 
 
@@ -159,30 +155,29 @@ end
 % f_x = gampdf(x, a, b);
 
 % Objective function
-function value = fitness(particles, nodes_num, which_particle, s, heta, theta)
+function value = fitness(particles, nodes_num, which_particle, s, heta)
     % value = rand; % just for testing the functionality of the rest of the
     % algorithm
     % Compute the Rk_hut and the Pk using the functions below
-    sum = 0;
+    value = 0;
     for i = 1:nodes_num
-        Rk_power = avRate (particles(which_particle).node(i).position(3), i, particles(which_particle).node(i).position(2), s, heta, theta);
-        Rk_hat = avThrouput (i, Rk_power, particles(which_particle).node(i).position(1));
+        Rk_power = avRate (particles(which_particle).node(i).position(3), i, particles(which_particle).node(i).position(2), s, heta);
+        Rk_hat = avThrouput (i, Rk_power, particles(which_particle));
         Pk = particles(which_particle).node(i).position(2);
-        sum = sum + (Rk_hat/Pk);
+        value = value + (Rk_hat/Pk);
     end
-    value = sum;
 end
 
 % Average throughput of the network Rk_hat
 % k is the number of the kth node
 % Rk_power is the average rate of the node
 % q(k) is the probability of channel access of the kth node
-function Rk_hat = avThrouput (k, Rk_power, q)
-    temp1 = Rk_power * q;
+function Rk_hat = avThrouput (k, Rk_power, particle)
+    temp1 = Rk_power * particle.node(k).position(1);
     temp2 = 1;
     for i = 1:k
         if i ~= k
-            temp2 = temp2 * (1 - q);
+            temp2 = temp2 * (1 - particle.node(i).position(1));
         end
     end
     Rk_hat = temp1 * temp2;
@@ -191,21 +186,24 @@ end
 
 % Average rate of the kth node Rk_power
 
-function Rk_power = avRate (Rk, k, Pk, s, heta, theta)
-    Xk = Xk_helper(s, Rk, Pk, heta, theta);
-    g = gammainc(Xk, k);
-    G = gamma(k);
-    temp1 = g/G;
-    temp2 = 1 - temp1;
+function Rk_power = avRate (Rk, ~, Pk, s, heta)
+    Xk = Xk_helper(s, Rk, Pk, heta);
+    a = 6.11;
+    b = 0.07;
+    g = gammainc(a, Xk/(b^2));
+    % G = gamma(k);
+    % temp1 = g/G;
+    % temp2 = 1 - temp1;
+    temp2 = 1 - g;
     Rk_power = Rk * temp2;
 end
 
 
 % Xk helper function
 
-function y = Xk_helper(s, Rk, Pk, heta, theta)
-    numerator = 2 * pi * (s^2) * ((2 * Rk) - 1);
-    denominator = exp(1) * (abs(heta * Pk))^2 * theta^2;
+function y = Xk_helper(s, Rk, Pk, heta)
+    numerator = 2 * pi * (s^2) * ((2 ^ Rk) - 1);
+    denominator = exp(1) * ((abs(heta * Pk))^2);
     fraction = numerator/denominator;
     if fraction < 0
         y = 0;
