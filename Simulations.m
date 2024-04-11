@@ -44,9 +44,9 @@ num_devices = 5; % Change this to the desired number of devices (K)
 num_variables = 3;
 num_particles = 50; % number of particles that will search for the best position
 max_iterations = 500; % iterations until an acceptable convergence
-phi_p = 1.5; % cognitive parameter
-phi_g = 2; % social parameter
-w = 0.7; % inertia weight
+phi_p = 3; % cognitive parameter
+phi_g = 3; % social parameter
+w = 0.9; % inertia weight
 global_best_fitness = 0;
 s = 0.5;
 heta = 0.6;
@@ -104,7 +104,7 @@ for iteration = 1:max_iterations
             if (temp(1) > qLow) && (temp(1) < qHigh) && (temp(2) > PLow) && (temp(2) < PHigh) && (temp(3) > RLow) && (temp(3) < RHigh)% implement the limits of the variables in if statement
                 particles(i).node(j).position = temp;
             else
-                continue % instead of old position put the edge
+                continue
             end
         end
         
