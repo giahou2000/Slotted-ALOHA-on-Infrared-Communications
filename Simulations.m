@@ -48,7 +48,7 @@ phi_p = 1.1; % cognitive parameter
 phi_g = 1.1; % social parameter
 w = 0.7; % inertia weight
 global_best_fitness = 0;
-s = 0.5;
+s = [0.15, 0.72, 0.38, 0.75, 0.35]; % for each node the variance
 heta = 0.6;
 
 % ______________________________________________
@@ -161,7 +161,7 @@ function value = fitness(particles, nodes_num, which_particle, s, heta)
     % Compute the Rk_hut and the Pk using the functions below
     value = 0;
     for i = 1:nodes_num
-        Rk_power = avRate (particles(which_particle).node(i).position(3), i, particles(which_particle).node(i).position(2), s, heta);
+        Rk_power = avRate (particles(which_particle).node(i).position(3), i, particles(which_particle).node(i).position(2), s(i), heta);
         Rk_hat = avThrouput (i, Rk_power, particles(which_particle));
         Pk = particles(which_particle).node(i).position(2);
         value = value + (Rk_hat/Pk);
