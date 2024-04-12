@@ -23,9 +23,9 @@
 
 clc; clear;
 
-qLow = 0; % probability
-PLow = 0; % (w)
-RLow = 0; % (bps/Hz)
+qLow = 0.001; % probability
+PLow = 0.0001; % (w)
+RLow = 0.001; % (bps/Hz)
 
 qHigh = 1; % probability
 PHigh = 0.05; % (W)
@@ -44,9 +44,9 @@ num_devices = 5; % Change this to the desired number of devices (K)
 num_variables = 3;
 num_particles = 50; % number of particles that will search for the best position
 max_iterations = 500; % iterations until an acceptable convergence
-phi_p = 3; % cognitive parameter
-phi_g = 3; % social parameter
-w = 0.9; % inertia weight
+phi_p = 1.1; % cognitive parameter
+phi_g = 1.1; % social parameter
+w = 0.7; % inertia weight
 global_best_fitness = 0;
 s = 0.5;
 heta = 0.6;
