@@ -23,7 +23,7 @@
 
 clc; clear;
 
-qLow = 0.001; % probability
+qLow = 0.1; % probability
 PLow = 0.0001; % (w)
 RLow = 0.001; % (bps/Hz)
 
