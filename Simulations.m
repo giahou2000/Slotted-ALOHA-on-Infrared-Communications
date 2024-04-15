@@ -43,7 +43,7 @@ velocity_high = abs(bup - blo);
 num_devices = 5; % Change this to the desired number of devices (K)
 num_variables = 3;
 num_particles = 50; % number of particles that will search for the best position
-max_iterations = 2000; % iterations until an acceptable convergence
+max_iterations = 5000; % iterations until an acceptable convergence
 phi_p = 1.1; % cognitive parameter
 phi_g = 1.1; % social parameter
 w = 0.7; % inertia weight
@@ -81,7 +81,22 @@ for i = 1:num_particles
     end
 end
 
-
+q1 = zeros(max_iterations, 1);
+q2 = zeros(max_iterations, 1);
+q3 = zeros(max_iterations, 1);
+q4 = zeros(max_iterations, 1);
+q5 = zeros(max_iterations, 1);
+p1 = zeros(max_iterations, 1);
+p2 = zeros(max_iterations, 1);
+p3 = zeros(max_iterations, 1);
+p4 = zeros(max_iterations, 1);
+p5 = zeros(max_iterations, 1);
+r1 = zeros(max_iterations, 1);
+r2 = zeros(max_iterations, 1);
+r3 = zeros(max_iterations, 1);
+r4 = zeros(max_iterations, 1);
+r5 = zeros(max_iterations, 1);
+fits = zeros(max_iterations, 1);
 
 %% Main PSO loop
 % ______________________________________________
@@ -127,6 +142,24 @@ for iteration = 1:max_iterations
     
     % Display current best fitness value for each iteration
     fprintf('Iteration %d: Current best fitness = %.4f\n', iteration, global_best_fitness);
+
+    q1(iteration) = global_best(1).position(1);
+    q2(iteration) = global_best(2).position(1);
+    q3(iteration) = global_best(3).position(1);
+    q4(iteration) = global_best(4).position(1);
+    q5(iteration) = global_best(5).position(1);
+    p1(iteration) = global_best(1).position(2);
+    p2(iteration) = global_best(2).position(2);
+    p3(iteration) = global_best(3).position(2);
+    p4(iteration) = global_best(4).position(2);
+    p5(iteration) = global_best(5).position(2);
+    r1(iteration) = global_best(1).position(3);
+    r2(iteration) = global_best(2).position(3);
+    r3(iteration) = global_best(3).position(3);
+    r4(iteration) = global_best(4).position(3);
+    r5(iteration) = global_best(5).position(3);
+    fits(iteration) = global_best_fitness;
+
 end
 
 % Display final result
@@ -139,9 +172,29 @@ for i = 1:num_devices
     disp('')
 end
 
+%% 
+
+% Display convergance
+x = 1:max_iterations;
+figure
+plot(x, q1, x, p1, x, r1, x, q2, x, p2, x, r2, x, q3, x, p3, x, r3, x, q4, x, p4, x, r4, x, q5, x, p5, x, r5, x, fits)
+title('Convergence')
+xlabel('Iteration #')
+ylabel('Exploration parameters')
+legend('q1', 'p1', 'r1', 'q2', 'p2', 'r2', 'q3', 'p3', 'r3', 'q4', 'p4', 'r4', 'q5', 'p5', 'r5', 'fitness')
 
 
+%% SNR figure
 
+Rk_hats = zeros(1, num_devices);
+for i = 1:num_devices
+    Rk_power = avRate (global_best(i).position(3), i, global_best(i).position(2), s, heta, H_0(i));
+    Rk_hats(i) = avThrouputforSNR (i, Rk_power, global_best);
+end
+
+disp("")
+disp("Rk_hats:")
+disp(Rk_hats)
 
 %% Supporting Equations for calculating the objective function
 % ______________________________________________
@@ -177,6 +230,22 @@ function Rk_hat = avThrouput (k, Rk_power, particle)
     for i = 1:k
         if i ~= k
             temp2 = temp2 * (1 - particle.node(i).position(1));
+        end
+    end
+    Rk_hat = temp1 * temp2;
+end
+
+% Average throughput of the network Rk_hat but for the results calculations
+% We do that so that we use the global_best struct instead of the particle
+% k is the number of the kth node
+% Rk_power is the average rate of the node
+% q(k) is the probability of channel access of the kth node
+function Rk_hat = avThrouputforSNR (k, Rk_power, particle)
+    temp1 = Rk_power * particle(k).position(1);
+    temp2 = 1;
+    for i = 1:k
+        if i ~= k
+            temp2 = temp2 * (1 - particle(i).position(1));
         end
     end
     Rk_hat = temp1 * temp2;
