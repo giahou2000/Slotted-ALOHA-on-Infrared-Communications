@@ -43,7 +43,7 @@ velocity_high = abs(bup - blo);
 num_devices = 5; % Change this to the desired number of devices (K)
 num_variables = 3;
 num_particles = 50; % number of particles that will search for the best position
-max_iterations = 5000; % iterations until an acceptable convergence
+max_iterations = 300; % iterations until an acceptable convergence
 phi_p = 1.1; % cognitive parameter
 phi_g = 1.1; % social parameter
 w = 0.7; % inertia weight
@@ -177,11 +177,20 @@ end
 % Display convergance
 x = 1:max_iterations;
 figure
-plot(x, q1, x, p1, x, r1, x, q2, x, p2, x, r2, x, q3, x, p3, x, r3, x, q4, x, p4, x, r4, x, q5, x, p5, x, r5, x, fits)
-title('Convergence')
-xlabel('Iteration #')
-ylabel('Exploration parameters')
-legend('q1', 'p1', 'r1', 'q2', 'p2', 'r2', 'q3', 'p3', 'r3', 'q4', 'p4', 'r4', 'q5', 'p5', 'r5', 'fitness')
+yyaxis left
+plot(x, r1, x, r2, x, r3, x, r4, x, r5, 'LineWidth', 1)
+yyaxis right
+plot(x, fits, 'LineWidth', 2)
+% plot(x, q1, x, p1, x, r1, x, q2, x, p2, x, r2, x, q3, x, p3, x, r3, x, q4, x, p4, x, r4, x, q5, x, p5, x, r5, x, fits)
+title('Convergence', 'FontSize', 18)
+xlabel('Iteration #', 'FontSize', 18)
+yyaxis left
+ylabel('SN rates (bps/Hz)', 'FontSize', 18)
+yyaxis right
+ylabel('fitness (%)', 'FontSize', 18)
+% legend('q1', 'p1', 'r1', 'q2', 'p2', 'r2', 'q3', 'p3', 'r3', 'q4', 'p4', 'r4', 'q5', 'p5', 'r5', 'fitness')
+legend('r1', 'r2', 'r3','r4', 'r5', 'Fitness', 'FontSize', 18)
+fontsize(gca,20, 'Points')
 
 
 %% SNR figure
