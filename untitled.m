@@ -3,8 +3,8 @@
 
 SNR = struct.empty(5, 0);
 s = [1e-07, 1e-08, 1e-09, 1e-10, 1e-11, 1e-12, 1e-13, 1e-14, 1e-15];
-
-for b = 1:9
+save_fitness = [];
+for b = 1:8
 
     qLow = 0.1; % probability
     PLow = 0.0001; % (w)
@@ -164,11 +164,12 @@ for b = 1:9
         SNR(i).pow(b) = global_best(i).position(2);
         SNR(i).rate(b) = global_best(i).position(3);
     end
+    save_fitness(b) = global_best_fitness;
 end
 
 
 %% Display SNR
-x = 1:9;
+x = 1:8;
 splot = ["e-07", "1e-08", "1e-09", "1e-10", "1e-11", "1e-12", "1e-13", "1e-14", "1e-15"];
 X = categorical(splot);
 
@@ -179,35 +180,51 @@ figure
 plot(x, SNR(1).rate, x, SNR(2).rate, x, SNR(3).rate, x, SNR(4).rate, x, SNR(5).rate, 'LineWidth', 3)
 % plot(X, SNR(1).rate, SNR(2).rate, SNR(3).rate, SNR(4).rate, SNR(5).rate, 'LineWidth', 3, 'ko-')
 % plot(x, q1, x, p1, x, r1, x, q2, x, p2, x, r2, x, q3, x, p3, x, r3, x, q4, x, p4, x, r4, x, q5, x, p5, x, r5, x, fits)
-xlabel('Noise s', 'FontSize', 25)
-ylabel('Average throughput (bps/Hz)', 'FontSize', 25)
+xlabel('Noise σ^2', 'FontSize', 35)
+ylabel('Rate (bps/Hz)', 'FontSize', 35)
+xticklabels({"e-07", "1e-08", "1e-09", "1e-10", "1e-11", "1e-12", "1e-13", "1e-14", "1e-15"})
 % legend('q1', 'p1', 'r1', 'q2', 'p2', 'r2', 'q3', 'p3', 'r3', 'q4', 'p4', 'r4', 'q5', 'p5', 'r5', 'fitness')
-legend('SN1', 'SN2', 'SN3','SN4', 'SN5', 'FontSize', 25)
-fontsize(gca,20, 'Points')
+legend('SN1', 'SN2', 'SN3','SN4', 'SN5', 'FontSize', 35)
+fontsize(gca, 35, 'Points')
 
+% s = [1e-07, 1e-08, 1e-09, 1e-10, 1e-11, 1e-12, 1e-13, 1e-14];
+s = [1e-14, 1e-13, 1e-12, 1e-11, 1e-10, 1e-09, 1e-08, 1e-07];
 figure
 % yyaxis left
 % plot(x, r1, x, r2, x, r3, x, r4, x, r5, 'LineWidth', 1)
-plot(x, SNR(1).prob, x, SNR(2).prob, x, SNR(3).prob, x, SNR(4).prob, x, SNR(5).prob, 'LineWidth', 3)
+plot(x, save_fitness, 'LineWidth', 3)
 % plot(X, SNR(1).rate, SNR(2).rate, SNR(3).rate, SNR(4).rate, SNR(5).rate, 'LineWidth', 3, 'ko-')
 % plot(x, q1, x, p1, x, r1, x, q2, x, p2, x, r2, x, q3, x, p3, x, r3, x, q4, x, p4, x, r4, x, q5, x, p5, x, r5, x, fits)
-xlabel('Noise s', 'FontSize', 25)
-ylabel('Probability of transmision', 'FontSize', 25)
+xlabel('Noise σ^2', 'FontSize', 45)
+ylabel('Fitness (bps/Hz/W)', 'FontSize', 45)
+xticklabels({"e-07", "1e-08", "1e-09", "1e-10", "1e-11", "1e-12", "1e-13", "1e-14"})
 % legend('q1', 'p1', 'r1', 'q2', 'p2', 'r2', 'q3', 'p3', 'r3', 'q4', 'p4', 'r4', 'q5', 'p5', 'r5', 'fitness')
-legend('SN1', 'SN2', 'SN3','SN4', 'SN5', 'FontSize', 25)
-fontsize(gca,20, 'Points')
+% legend('SN1', 'SN2', 'SN3','SN4', 'SN5', 'FontSize', 25)
+fontsize(gca, 45, 'Points')
 
-figure
-% yyaxis left
-% plot(x, r1, x, r2, x, r3, x, r4, x, r5, 'LineWidth', 1)
-plot(x, SNR(1).pow, x, SNR(2).pow, x, SNR(3).pow, x, SNR(4).pow, x, SNR(5).pow, 'LineWidth', 3)
-% plot(X, SNR(1).rate, SNR(2).rate, SNR(3).rate, SNR(4).rate, SNR(5).rate, 'LineWidth', 3, 'ko-')
-% plot(x, q1, x, p1, x, r1, x, q2, x, p2, x, r2, x, q3, x, p3, x, r3, x, q4, x, p4, x, r4, x, q5, x, p5, x, r5, x, fits)
-xlabel('Noise s', 'FontSize', 25)
-ylabel('Transmitted power (W)', 'FontSize', 25)
-% legend('q1', 'p1', 'r1', 'q2', 'p2', 'r2', 'q3', 'p3', 'r3', 'q4', 'p4', 'r4', 'q5', 'p5', 'r5', 'fitness')
-legend('SN1', 'SN2', 'SN3','SN4', 'SN5', 'FontSize', 25)
-fontsize(gca,20, 'Points')
+% figure
+% % yyaxis left
+% % plot(x, r1, x, r2, x, r3, x, r4, x, r5, 'LineWidth', 1)
+% plot(x, SNR(1).prob, x, SNR(2).prob, x, SNR(3).prob, x, SNR(4).prob, x, SNR(5).prob, 'LineWidth', 3)
+% % plot(X, SNR(1).rate, SNR(2).rate, SNR(3).rate, SNR(4).rate, SNR(5).rate, 'LineWidth', 3, 'ko-')
+% % plot(x, q1, x, p1, x, r1, x, q2, x, p2, x, r2, x, q3, x, p3, x, r3, x, q4, x, p4, x, r4, x, q5, x, p5, x, r5, x, fits)
+% xlabel('Noise s', 'FontSize', 25)
+% ylabel('Probability of transmision', 'FontSize', 25)
+% % legend('q1', 'p1', 'r1', 'q2', 'p2', 'r2', 'q3', 'p3', 'r3', 'q4', 'p4', 'r4', 'q5', 'p5', 'r5', 'fitness')
+% legend('SN1', 'SN2', 'SN3','SN4', 'SN5', 'FontSize', 25)
+% fontsize(gca,20, 'Points')
+% 
+% figure
+% % yyaxis left
+% % plot(x, r1, x, r2, x, r3, x, r4, x, r5, 'LineWidth', 1)
+% plot(x, SNR(1).pow, x, SNR(2).pow, x, SNR(3).pow, x, SNR(4).pow, x, SNR(5).pow, 'LineWidth', 3)
+% % plot(X, SNR(1).rate, SNR(2).rate, SNR(3).rate, SNR(4).rate, SNR(5).rate, 'LineWidth', 3, 'ko-')
+% % plot(x, q1, x, p1, x, r1, x, q2, x, p2, x, r2, x, q3, x, p3, x, r3, x, q4, x, p4, x, r4, x, q5, x, p5, x, r5, x, fits)
+% xlabel('Noise s', 'FontSize', 25)
+% ylabel('Transmitted power (W)', 'FontSize', 25)
+% % legend('q1', 'p1', 'r1', 'q2', 'p2', 'r2', 'q3', 'p3', 'r3', 'q4', 'p4', 'r4', 'q5', 'p5', 'r5', 'fitness')
+% legend('SN1', 'SN2', 'SN3','SN4', 'SN5', 'FontSize', 25)
+% fontsize(gca,20, 'Points')
 
 %% Supporting Equations for calculating the objective function
 % ______________________________________________

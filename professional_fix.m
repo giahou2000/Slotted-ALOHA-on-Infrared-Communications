@@ -45,12 +45,12 @@ velocity_high = abs(bup - blo);
 num_devices = 5; % Change this to the desired number of devices (K)
 num_variables = 3;
 num_particles = 50; % number of particles that will search for the best position
-max_iterations = 300; % iterations until an acceptable convergence
+max_iterations = 50; % iterations until an acceptable convergence
 phi_p = 1.1; % cognitive parameter
 phi_g = 1.1; % social parameter
 w = 0.7; % inertia weight
 global_best_fitness = 0;
-s = 1e-08;
+s = 1e-15;
 heta = 0.6;
 H_0 = [1.6749e-06, 2.0559e-06, 4.6345e-06, 2.4155e-06, 1.6482e-06];
 
@@ -60,6 +60,7 @@ H_0 = [1.6749e-06, 2.0559e-06, 4.6345e-06, 2.4155e-06, 1.6482e-06];
 % Pre-allocate empty arrays of structs
 particles = struct.empty(num_particles, 0);  % 0 indicates no pre-defined fields
 global_best = struct.empty(num_devices, 0);
+Rk_hats = zeros(1, num_devices);
 
 % Access and modify individual structs
 for i = 1:num_particles
@@ -122,16 +123,23 @@ for iteration = 1:max_iterations
             temp = old_position + particles(i).node(j).velocity;
             if (temp(1) > qLow) && (temp(1) < qHigh) && (temp(2) > PLow) && (temp(2) < PHigh) && (temp(3) > RLow) && (temp(3) < RHigh)% implement the limits of the variables in if statement
                 particles(i).node(j).position = temp;
+                % disp(j)
             else
+                % disp("hello world")
                 continue
             end
+        end
+
+        for j = 1:num_devices
+            Rk_power = avRate (global_best(j).position(3), j, global_best(j).position(2), s, heta, H_0(j));
+            Rk_hats(j) = avThrouputforSNR (j, Rk_power, global_best, num_devices);
         end
         
         % Evaluate fitnessprint
         current_fitness = fitness(particles, num_devices, i, s, heta, H_0);
         
         % Update personal best
-        if current_fitness > particles(i).best_fitness
+        if (current_fitness > particles(i).best_fitness) && (Rk_hats(1) > RLow) && (Rk_hats(1) < RHigh) && (Rk_hats(2) > RLow) && (Rk_hats(2) < RHigh) && (Rk_hats(3) > RLow) && (Rk_hats(3) < RHigh) && (Rk_hats(4) > RLow) && (Rk_hats(4) < RHigh) && (Rk_hats(5) > RLow) && (Rk_hats(5) < RHigh)
             particles(i).best_fitness = current_fitness;
             for j = 1:num_devices
                 particles(i).node(j).best_position = particles(i).node(j).position;
@@ -176,6 +184,9 @@ for i = 1:num_devices
     disp(['q:', num2str(global_best(i).position(1)), '   ', 'P:', num2str(global_best(i).position(2)), '   ', 'R:', num2str(global_best(i).position(3))]);
     disp('')
 end
+disp("")
+disp("Rk_hats:")
+disp(Rk_hats)
 
 %% Testing the convergence of the algorithm
 % and monitoring the evolution of the sulution
