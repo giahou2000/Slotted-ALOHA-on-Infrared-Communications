@@ -198,11 +198,11 @@ figure
 % plot(x, r1, x, r2, x, r3, x, r4, x, r5, 'LineWidth', 1)
 plot(x, fits, 'LineWidth', 4)
 % plot(x, q1, x, p1, x, r1, x, q2, x, p2, x, r2, x, q3, x, p3, x, r3, x, q4, x, p4, x, r4, x, q5, x, p5, x, r5, x, fits)
-xlabel('Iteration #', 'FontSize', 18)
-ylabel('fitness (bps/Hz/w)', 'FontSize', 18)
+xlabel('Iteration #', 'FontSize', 45)
+ylabel('EE (bps/Hz/w)', 'FontSize', 45)
 % legend('q1', 'p1', 'r1', 'q2', 'p2', 'r2', 'q3', 'p3', 'r3', 'q4', 'p4', 'r4', 'q5', 'p5', 'r5', 'fitness')
 % legend('r1', 'r2', 'r3','r4', 'r5', 'Fitness', 'FontSize', 18)
-fontsize(gca,20, 'Points')
+fontsize(gca, 45, 'Points')
 
 
 %% Actuall solution for rates
